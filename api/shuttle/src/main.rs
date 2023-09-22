@@ -6,10 +6,20 @@ async fn hello_world() -> &'static str {
     "Hello World!"
 }
 
+#[get("/health_check")]
+async fn health_check() -> &'static str {
+    "OK"
+}
+
+#[get("/ping")]
+async fn ping() -> &'static str {
+    "PONG"
+}
+
 #[shuttle_runtime::main]
 async fn actix_web() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
     let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(hello_world);
+        cfg.service(hello_world).service(health_check).service(ping);
     };
 
     Ok(config.into())
