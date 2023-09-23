@@ -2,8 +2,7 @@ use actix_web::web;
 use actix_web::{get, web::ServiceConfig};
 use shuttle_actix_web::ShuttleActixWeb;
 use shuttle_runtime::CustomError;
-use sqlx::postgres::PgRow;
-use sqlx::{Executor, PgPool, Row};
+use sqlx::{Executor, PgPool};
 
 #[get("/")]
 async fn hello_world() -> &'static str {
@@ -22,21 +21,16 @@ async fn ping() -> &'static str {
 
 #[get("/version")]
 async fn version(pool: web::Data<PgPool>) -> String {
-    get_db_version(&pool)
-        .await
-        .expect("Failed to get db version")
+    match get_db_version(&pool).await {
+        Ok(version) => version,
+        Err(e) => format!("Error: {:?}", e),
+    }
 }
 
 async fn get_db_version(pool: &PgPool) -> Result<String, sqlx::Error> {
-    let version_query = "SHOW server_version;";
-    match sqlx::query(version_query)
-        .map(|row: PgRow| -> String { row.get(0) })
-        .fetch_one(pool)
-        .await
-    {
-        Ok(row) => Ok(row),
-        Err(_) => Err(sqlx::Error::RowNotFound),
-    }
+    // let version_query = "SHOW server_version";
+    let version_query = "SELECT version()";
+    sqlx::query_scalar(version_query).fetch_one(pool).await
 }
 
 #[shuttle_runtime::main]
@@ -54,7 +48,7 @@ async fn actix_web(
             .service(health_check)
             .service(ping)
             .service(version)
-            .app_data(db_pool.clone());
+            .app_data(db_pool);
     };
 
     Ok(config.into())
