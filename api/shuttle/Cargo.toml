@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.3.1"
+api-lib = { version = "0.1.0", path = "../lib" }
 shuttle-actix-web = "0.21.0"
 shuttle-runtime = "0.21.0"
 shuttle-shared-db = { version = "0.21.0", features = ["postgres"] }
