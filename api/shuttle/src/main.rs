@@ -1,6 +1,6 @@
 use actix_web::web;
 use actix_web::web::ServiceConfig;
-use api_lib::health::health_check;
+use api_lib::health;
 use api_lib::routes::{hello_world, ping, version};
 use shuttle_actix_web::ShuttleActixWeb;
 use shuttle_runtime::CustomError;
@@ -17,11 +17,11 @@ async fn actix_web(
 
     let db_pool = web::Data::new(pool);
     let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(hello_world)
-            .service(health_check)
+        cfg.app_data(db_pool)
+            .configure(health::service)
+            .service(hello_world)
             .service(ping)
-            .service(version)
-            .app_data(db_pool);
+            .service(version);
     };
 
     Ok(config.into())

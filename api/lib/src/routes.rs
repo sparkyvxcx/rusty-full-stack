@@ -3,17 +3,17 @@ use actix_web::web;
 use sqlx::PgPool;
 
 #[get("/")]
-pub async fn hello_world() -> &'static str {
+async fn hello_world() -> &'static str {
     "Hello World!"
 }
 
 #[get("/ping")]
-pub async fn ping() -> &'static str {
+async fn ping() -> &'static str {
     "PONG"
 }
 
 #[get("/version")]
-pub async fn version(pool: web::Data<PgPool>) -> String {
+async fn version(pool: web::Data<PgPool>) -> String {
     match get_db_version(&pool).await {
         Ok(version) => version,
         Err(e) => format!("Error: {:?}", e),
