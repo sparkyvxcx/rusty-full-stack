@@ -1,7 +1,10 @@
-use actix_web::get;
+use actix_web::{get, HttpResponse};
 
 #[get("/health_check")]
-pub async fn health_check() -> &'static str {
+pub async fn health_check() -> HttpResponse {
     tracing::info!("Getting health check");
-    "OK"
+
+    HttpResponse::Ok()
+        .append_header(("version", "v0.0.1"))
+        .finish()
 }
