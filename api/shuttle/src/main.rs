@@ -28,6 +28,7 @@ async fn version(pool: web::Data<PgPool>) -> String {
 }
 
 async fn get_db_version(pool: &PgPool) -> Result<String, sqlx::Error> {
+    tracing::info!("Getting version");
     // let version_query = "SHOW server_version";
     let version_query = "SELECT version()";
     sqlx::query_scalar(version_query).fetch_one(pool).await
