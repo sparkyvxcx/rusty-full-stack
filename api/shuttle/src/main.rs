@@ -1,10 +1,11 @@
 use actix_web::web;
 use actix_web::web::ServiceConfig;
-use api_lib::health;
-use api_lib::routes::{hello_world, ping, version};
 use shuttle_actix_web::ShuttleActixWeb;
 use shuttle_runtime::CustomError;
 use sqlx::Executor;
+
+use api_lib::routes::{hello_world, ping, version};
+use api_lib::{films, health};
 
 #[shuttle_runtime::main]
 async fn actix_web(
@@ -19,6 +20,7 @@ async fn actix_web(
     let config = move |cfg: &mut ServiceConfig| {
         cfg.app_data(db_pool)
             .configure(health::service)
+            .configure(films::service)
             .service(hello_world)
             .service(ping)
             .service(version);
