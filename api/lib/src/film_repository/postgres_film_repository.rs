@@ -29,7 +29,7 @@ impl FilmRepository for PostgresFilmRepository {
         .fetch_one(&self.pool).await.map_err(|e| e.to_string())
     }
 
-    async fn create_film(&self, create_film: &CreateFilm) -> FilmResult<Film> {
+    async fn create_film(&mut self, create_film: &CreateFilm) -> FilmResult<Film> {
         sqlx::query_as::<_, Film>(
             r#"INSERT INTO films (title, director, year, poster) VALUES ($1, $2, $3, $4) RETURNING id, title, director, year, poster, created_at, updated_at"#,
         )
@@ -42,7 +42,7 @@ impl FilmRepository for PostgresFilmRepository {
         .map_err(|e| e.to_string())
     }
 
-    async fn update_film(&self, film: &Film) -> FilmResult<Film> {
+    async fn update_film(&mut self, film: &Film) -> FilmResult<Film> {
         sqlx::query_as::<_, Film>(
             r#"UPDATE films SET title = $2, director = $3, year = $4, poster = $5 WHERE id = $1 RETURNING id, title, director, year, poster, created_at, updated_at"#,
         )
@@ -56,7 +56,7 @@ impl FilmRepository for PostgresFilmRepository {
         .map_err(|e| e.to_string())
     }
 
-    async fn delete_film(&self, film_id: &uuid::Uuid) -> FilmResult<uuid::Uuid> {
+    async fn delete_film(&mut self, film_id: &uuid::Uuid) -> FilmResult<uuid::Uuid> {
         sqlx::query_scalar::<_, uuid::Uuid>(r#"DELETE FROM films WHERE id = $1 RETURNING id"#)
             .bind(film_id)
             .fetch_one(&self.pool)
