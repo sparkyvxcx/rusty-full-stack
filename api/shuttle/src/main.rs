@@ -3,7 +3,7 @@ use shuttle_actix_web::ShuttleActixWeb;
 use shuttle_runtime::CustomError;
 use sqlx::Executor;
 
-use api_lib::film_repository::FilmRepository;
+use api_lib::film_repository::PostgresFilmRepository;
 use api_lib::routes::{hello_world, ping, version};
 use api_lib::{films, health};
 
@@ -17,11 +17,11 @@ async fn actix_web(
         .map_err(CustomError::new)?;
 
     let film_repo = api_lib::film_repository::PostgresFilmRepository::new(pool);
-    let film_repo: web::Data<Box<dyn FilmRepository>> = web::Data::new(Box::new(film_repo));
+    let film_repo = web::Data::new(film_repo);
     let config = move |cfg: &mut ServiceConfig| {
         cfg.app_data(film_repo)
             .configure(health::service)
-            .configure(films::service)
+            .configure(films::service::<PostgresFilmRepository>)
             .service(hello_world)
             .service(ping)
             .service(version);

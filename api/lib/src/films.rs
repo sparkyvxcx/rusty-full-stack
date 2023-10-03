@@ -5,18 +5,18 @@ use uuid::Uuid;
 
 use crate::film_repository::FilmRepository;
 
-pub fn service(cfg: &mut ServiceConfig) {
+pub fn service<R: FilmRepository>(cfg: &mut ServiceConfig) {
     cfg.service(
         web::scope("/v1/films")
-            .route("", web::get().to(get_films))
-            .route("/{film_id}", web::get().to(get_film))
-            .route("", web::post().to(post_film))
-            .route("", web::put().to(put_film))
-            .route("/{film_id}", web::delete().to(delete_film)),
+            .route("", web::get().to(get_films::<R>))
+            .route("/{film_id}", web::get().to(get_film::<R>))
+            .route("", web::post().to(post_film::<R>))
+            .route("", web::put().to(put_film::<R>))
+            .route("/{film_id}", web::delete().to(delete_film::<R>)),
     );
 }
 
-pub async fn get_films(repo: web::Data<Box<dyn FilmRepository>>) -> HttpResponse {
+pub async fn get_films<R: FilmRepository>(repo: web::Data<R>) -> HttpResponse {
     tracing::info!("Getting a list of films");
 
     match repo.get_films().await {
@@ -25,8 +25,8 @@ pub async fn get_films(repo: web::Data<Box<dyn FilmRepository>>) -> HttpResponse
     }
 }
 
-pub async fn get_film(
-    repo: web::Data<Box<dyn FilmRepository>>,
+pub async fn get_film<R: FilmRepository>(
+    repo: web::Data<R>,
     film_id: web::Path<Uuid>,
 ) -> HttpResponse {
     tracing::info!("Getting a specific film");
@@ -37,8 +37,8 @@ pub async fn get_film(
     }
 }
 
-pub async fn post_film(
-    repo: web::Data<Box<dyn FilmRepository>>,
+pub async fn post_film<R: FilmRepository>(
+    repo: web::Data<R>,
     film: web::Json<CreateFilm>,
 ) -> HttpResponse {
     match repo.create_film(&film).await {
@@ -49,8 +49,8 @@ pub async fn post_film(
     }
 }
 
-pub async fn put_film(
-    repo: web::Data<Box<dyn FilmRepository>>,
+pub async fn put_film<R: FilmRepository>(
+    repo: web::Data<R>,
     film: web::Json<Film>,
 ) -> HttpResponse {
     match repo.update_film(&film).await {
@@ -59,8 +59,8 @@ pub async fn put_film(
     }
 }
 
-pub async fn delete_film(
-    repo: web::Data<Box<dyn FilmRepository>>,
+pub async fn delete_film<R: FilmRepository>(
+    repo: web::Data<R>,
     film_id: web::Path<Uuid>,
 ) -> HttpResponse {
     tracing::info!("Deleting a specific film");
